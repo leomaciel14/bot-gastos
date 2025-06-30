@@ -1,16 +1,22 @@
+import os
 import telebot
 import gspread
 from datetime import datetime
+from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+
 # CONFIGURAÇÃO DO GOOGLE SHEETS
-scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('credenciais.json', scope)
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials_path = os.getenv("GOOGLE_CREDENTIALS_JSON")
+creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 client = gspread.authorize(creds)
 sheet = client.open("Controle de Gastos").sheet1
 
 # TOKEN DO SEU BOT TELEGRAM
-bot = telebot.TeleBot("8156413253:AAERpD6kO9Gyo6zAHMIXx53luaQ8m3G-1Z0")
+bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 
 # FUNÇÃO QUE TRATA TODAS AS MENSAGENS
 @bot.message_handler(func=lambda message: True)
