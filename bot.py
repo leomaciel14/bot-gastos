@@ -1,7 +1,7 @@
 import os
 import telebot
 import gspread
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 import base64
@@ -29,7 +29,7 @@ def registrar_gasto(message):
         texto = message.text.strip()
         categoria, valor = texto.rsplit(" ", 1)
         valor = float(valor.replace(",", "."))
-        data = datetime.now().strftime("%d/%m/%Y %H:%M")
+        data = (datetime.now() + timedelta(hours=3)).strftime("%d/%m/%Y %H:%M")
         sheet.append_row([data, categoria.capitalize(), valor])
         bot.reply_to(message, f"✅ Gasto registrado: {categoria.capitalize()} - R$ {valor:.2f}")
         print(f"Mensagem recebida: {texto}")  # <- debug útil
