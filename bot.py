@@ -4,14 +4,18 @@ import gspread
 from datetime import datetime
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
+import base64
+import json
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
 # CONFIGURAÇÃO DO GOOGLE SHEETS
+cred_base64 = os.getenv("GOOGLE_CREDENTIALS_JSON_BASE64")
+cred_dict = json.loads(base64.b64decode(cred_base64).decode("utf-8"))
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials_path = os.getenv("GOOGLE_CREDENTIALS_JSON")
-creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(cred_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open("Controle de Gastos").sheet1
 
@@ -28,7 +32,9 @@ def registrar_gasto(message):
         data = datetime.now().strftime("%d/%m/%Y %H:%M")
         sheet.append_row([data, categoria.capitalize(), valor])
         bot.reply_to(message, f"✅ Gasto registrado: {categoria.capitalize()} - R$ {valor:.2f}")
-    except:
+        print(f"Mensagem recebida: {texto}")  # <- debug útil
+    except Exception as e:
+        print(f"Erro ao registrar gasto: {e}")  # <- mais útil ainda
         bot.reply_to(message, "❌ Formato inválido. Use: <categoria> <valor>\nEx: padaria 15.90")
 
 # INICIA O BOT
