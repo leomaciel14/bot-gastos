@@ -34,17 +34,27 @@ def home():
 # FUNÇÃO DO TELEGRAM
 @bot.message_handler(func=lambda message: True)
 def registrar_gasto(message):
+    texto = message.text.strip()
+
     try:
-        texto = message.text.strip()
         categoria, valor = texto.rsplit(" ", 1)
+    except ValueError:
+        bot.reply_to(message, "❌ Formato inválido. Use: <categoria> <valor>\nEx: padaria 15.90")
+        return
+
+    try:
         valor = float(valor.replace(",", "."))
+    except ValueError:
+        bot.reply_to(message, "❌ Valor inválido. Certifique-se de digitar um número, como 12.50")
+        return
+
+    try:
         data = (datetime.now() + timedelta(hours=-3)).strftime("%d/%m/%Y %H:%M")
         sheet.append_row([data, categoria.capitalize(), valor])
         bot.reply_to(message, f"✅ Gasto registrado: {categoria.capitalize()} - R$ {valor:.2f}")
-        print(f"Mensagem recebida: {texto}")
     except Exception as e:
-        print(f"Erro ao registrar gasto: {e}")
-        bot.reply_to(message, "❌ Formato inválido. Use: <categoria> <valor>\nEx: padaria 15.90")
+        print(f"Erro ao registrar no Google Sheets: {e}")
+        bot.reply_to(message, "⚠️ Erro ao salvar no sistema. Tente novamente mais tarde.")
 
 # RODA TELEGRAM EM THREAD PARA NÃO BLOQUEAR O FLASK
 def iniciar_bot():
