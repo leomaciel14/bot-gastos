@@ -8,6 +8,7 @@ from flask import Flask
 import base64
 import json
 import threading
+import requests
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -23,6 +24,20 @@ sheet = client.open("Controle de Gastos").sheet1
 
 # TOKEN DO BOT
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
+
+# COMANDO /wake PARA MANTER A APLICAÇÃO ATIVA
+@bot.message_handler(commands=['wake'])
+def wake_up(message):
+    try:
+        url = "https://bot-gastos-xz8o.onrender.com"
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+            bot.reply_to(message, "✅ Aplicação ativada com sucesso!")
+        else:
+            bot.reply_to(message, f"⚠️ Aplicação respondeu com status {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        bot.reply_to(message, f"❌ Erro ao tentar acordar a aplicação:\n{e}")
 
 # FLASK APP PARA ABRIR UMA PORTA
 app = Flask(__name__)
